@@ -6,6 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
 @Composable
-fun Timeline(navController: NavController, modifier: Modifier = Modifier) {
-    Text("Hello Timeline")
+fun NewPostScreen(modifier: Modifier = Modifier) {
+    Text("Hello New Post")
 }

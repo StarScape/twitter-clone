@@ -1,17 +1,13 @@
 package com.example.twitterclone
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -26,21 +22,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.twitterclone.ui.screens.Timeline
+import com.example.twitterclone.data.PostRepository
+import com.example.twitterclone.ui.TimelineViewModel
+import com.example.twitterclone.ui.screens.CreateAccountScreen
+import com.example.twitterclone.ui.screens.LoginScreen
+import com.example.twitterclone.ui.screens.NewPostScreen
+import com.example.twitterclone.ui.screens.ProfileScreen
+import com.example.twitterclone.ui.screens.TimelineScreen
 import com.example.twitterclone.ui.theme.TwitterCloneTheme
-
-sealed class Screen(val route: String, @StringRes val resourceId: Int) {
-    data object Timeline : Screen("timeline", R.string.timeline)
-    data object NewPost: Screen("newpost", R.string.newpost)
-    data object Profile: Screen("profile", R.string.profile)
-    companion object {
-        val screens = listOf(Timeline, NewPost, Profile)
-    }
-}
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import org.koin.android.ext.android.inject
+import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
 
 class MainActivity : ComponentActivity() {
+    private val auth: FirebaseAuth by inject()
+    private lateinit var authManager: AuthManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        authManager = AuthManager(auth, Firebase.firestore, this)
+
         setContent {
             TwitterCloneTheme {
                 // A surface container using the 'background' color from the theme
@@ -48,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Main()
+                    Main(authManager)
                 }
             }
         }
@@ -56,48 +63,66 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Main(modifier: Modifier = Modifier) {
+fun Main(authManager: AuthManager, modifier: Modifier = Modifier) {
     val navController = rememberNavController()
+
     Scaffold(
         bottomBar = {
-
-            BottomNavigation {
-                Screen.screens.forEach { screen ->
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-
-                    BottomNavigationItem(
-                        icon = { Icon(Icons.Filled.Favorite, contentDescription = null) },
-                        label = { Text(stringResource(screen.resourceId)) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
-                                launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
-                                restoreState = true
-                            }
-                        }
-                    )
-                }
-            }
+            TwitterCloneBottomNav()
         }
     ) { innerPadding ->
+        // FirebaseAuth.getInstance().signOut() // for debugging
+        val initialRoute = if (authManager.auth.currentUser != null) {
+            Screen.Timeline.route
+        } else {
+            Screen.Login.route
+        }
         NavHost(
             navController,
-            startDestination = Screen.Profile.route,
+            startDestination = initialRoute,
             Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Timeline.route) { Timeline(navController) }
-            composable(Screen.NewPost.route) { Text("Hello New Post") }
-            composable(Screen.Profile.route) { Text("Hello Profile") }
+            composable(Screen.Login.route) {
+                LoginScreen(navController, authManager)
+            }
+            composable(Screen.CreateAccount.route) {
+                CreateAccountScreen(navController, authManager)
+            }
+            composable(Screen.Profile.route) { ProfileScreen() }
+            composable(Screen.NewPost.route) { NewPostScreen() }
+            composable(Screen.Timeline.route) { TimelineScreen() }
+        }
+    }
+}
+
+@Composable
+fun TwitterCloneBottomNav() {
+    val navController = rememberNavController()
+    BottomNavigation {
+        Screen.authenticatedScreens.forEach { screen ->
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
+
+            BottomNavigationItem(
+                icon = { Icon(screen.icon, contentDescription = null) },
+                label = { Text(stringResource(screen.resourceId)) },
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
+                },
+            )
         }
     }
 }

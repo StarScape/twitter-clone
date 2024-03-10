@@ -3,4 +3,6 @@
     <string name="timeline">Timeline</string>
     <string name="newpost">New Post</string>
     <string name="profile">Profile</string>
+
+    <string name="account_created_successfully">Account created successfully!</string>
 </resources>
