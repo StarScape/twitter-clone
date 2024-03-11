@@ -16,9 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-class PostRepository {
+class PostRepository(private val db: FirebaseFirestore) {
     companion object { const val TAG: String = "PostRepository" }
-    private val db = Firebase.firestore
 
     fun createPost(text: String) {
         val data = hashMapOf(
@@ -36,27 +35,34 @@ class PostRepository {
             }
     }
 
-    suspend fun getPosts(): List<Post> = coroutineScope {
-        async {
-            db.collection("posts")
-                .orderBy("time_posted", Query.Direction.DESCENDING)
-                .get()
-                .await()
-                .documents
-                .filterNotNull()
-                .map { document ->
-                    async {
-                        val userSnapshot = db.collection("users")
-                            .document(document["user"] as String)
-                            .get()
-                            .await()
-                        Post.TextPost(
-                            user = User(username = userSnapshot["username"] as String),
-                            timePosted = document["time_posted"] as Timestamp,
-                            text = document["text"] as String
-                        )
-                    }
-                }.awaitAll()
-        }.await()
+    /**
+     * Get posts from Firebase backend.
+     *
+     * @param userUid If specified, will only return posts from user with this UID.
+     */
+    suspend fun getPosts(userUid: String? = null): List<Post> = coroutineScope {
+        var query = db.collection("posts")
+            .orderBy("time_posted", Query.Direction.DESCENDING)
+        if (userUid != null) {
+            query = query.whereEqualTo("user", userUid)
+        }
+
+        query.get()
+            .await()
+            .documents
+            .filterNotNull()
+            .map { document ->
+                async {
+                    val userSnapshot = db.collection("users")
+                        .document(document["user"] as String)
+                        .get()
+                        .await()
+                    Post.TextPost(
+                        user = User(username = userSnapshot["username"] as String),
+                        timePosted = document["time_posted"] as Timestamp,
+                        text = document["text"] as String
+                    )
+                }
+            }.awaitAll()
     }
 }

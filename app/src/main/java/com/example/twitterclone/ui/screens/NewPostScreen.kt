@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
-import com.example.twitterclone.ui.NewPostViewModel
+import com.example.twitterclone.ui.viewmodels.NewPostViewModel
 import org.koin.compose.koinInject
 
 @Composable

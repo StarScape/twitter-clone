@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -35,8 +34,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import org.koin.android.ext.android.inject
 
-
-class MainActivity : ComponentActivity() {
+class TwitterCloneActivity : ComponentActivity() {
     private val auth: FirebaseAuth by inject()
     private lateinit var authManager: AuthManager
     private val navigator: TwitterCloneNavigator by inject()
