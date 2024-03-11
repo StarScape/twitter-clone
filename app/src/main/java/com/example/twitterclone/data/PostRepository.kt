@@ -1,5 +1,6 @@
 package com.example.twitterclone.data
 
+import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,7 +17,24 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class PostRepository {
+    companion object { const val TAG: String = "PostRepository" }
     private val db = Firebase.firestore
+
+    fun createPost(text: String) {
+        val data = hashMapOf(
+            "user" to Firebase.auth.currentUser!!.uid,
+            "time_posted" to Timestamp.now(),
+            "text" to text,
+        )
+        db.collection("posts")
+            .add(data)
+            .addOnSuccessListener { documentReference ->
+                Log.d(TAG, "Wrote post to collection with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error adding adding post", e)
+            }
+    }
 
     suspend fun getPosts(): List<Post> = coroutineScope {
         async {
