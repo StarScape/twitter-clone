@@ -23,7 +23,7 @@ sealed class Screen(
     data object Profile: BottomNavScreen("profile", Icons.Filled.AccountCircle, R.string.profile)
     companion object {
         // List of screens visible after authentication
-        val authenticatedScreens = listOf(Timeline, NewPost, Profile)
+        val bottomNavScreens = listOf(Timeline, NewPost, Profile)
     }
 }
 

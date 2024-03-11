@@ -43,13 +43,13 @@ class TwitterCloneActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         authManager = AuthManager(auth, Firebase.firestore, this)
+        // FirebaseAuth.getInstance().signOut() // for debugging
 
         setContent {
             val navController = rememberNavController()
             navigator.navController = navController
 
             TwitterCloneTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -65,41 +65,45 @@ class TwitterCloneActivity : ComponentActivity() {
 fun Main(navController: NavHostController, authManager: AuthManager, modifier: Modifier = Modifier) {
     Scaffold(
         bottomBar = {
-            BottomNavigation {
-                Screen.authenticatedScreens.forEach { screen ->
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentDestination = navBackStackEntry?.destination
 
-                    BottomNavigationItem(
-                        icon = { Icon(screen.icon, contentDescription = null) },
-                        label = { Text(stringResource(screen.resourceId)) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            // Don't display bottom nav on Login and CreateAccount pages
+            if (currentDestination?.route != Screen.Login.route
+                && currentDestination?.route != Screen.CreateAccount.route) {
+                BottomNavigation {
+                    for (screen in Screen.bottomNavScreens) {
+                        BottomNavigationItem(
+                            icon = { Icon(screen.icon, contentDescription = null) },
+                            label = { Text(stringResource(screen.resourceId)) },
+                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    // on the back stack as users select items
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    // Avoid multiple copies of the same destination when
+                                    // reselecting the same item
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously selected item
+                                    restoreState = true
                                 }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
-                                launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
-                                restoreState = true
-                            }
-                        },
-                    )
+                            },
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        // FirebaseAuth.getInstance().signOut() // for debugging
         val initialRoute = if (authManager.auth.currentUser != null) {
             Screen.Timeline.route
         } else {
             Screen.Login.route
         }
+
         NavHost(
             navController,
             startDestination = initialRoute,
