@@ -2,6 +2,7 @@ package com.example.twitterclone.data
 
 import android.net.Uri
 import android.util.Log
+import com.example.twitterclone.fileNameForImageUpload
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,7 +13,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
-import java.io.File
 
 class PostRepository(private val db: FirebaseFirestore) {
     companion object { const val TAG: String = "PostRepository" }
@@ -39,36 +39,27 @@ class PostRepository(private val db: FirebaseFirestore) {
     /**
      * Creates a new image post. The [text] parameter is optional.
      */
-    fun createPost(imageFile: Uri, text: String = "") {
-        val storageRef = Firebase.storage.reference
-        val imageRef = storageRef.child("images/test.jpg")
-        val uploadTask = imageRef.putFile(imageFile)
-        uploadTask.addOnCompleteListener { task ->
-            task.result
-            if (task.isSuccessful) {
-                Log.i(TAG, "Uploaded photo successfully.")
-                val downloadUrl = imageRef.downloadUrl.addOnCompleteListener {
-                    val downloadUrl = it.result.toString()
-                    val data = hashMapOf(
-                        "user" to Firebase.auth.currentUser!!.uid,
-                        "time_posted" to Timestamp.now(),
-                        "image_url" to downloadUrl,
-                        // If there is no text in the post, we
-                        // still write a blank string to the DB
-                        "text" to text,
-                    )
-                    db.collection("posts")
-                        .add(data)
-                        .addOnSuccessListener { documentReference ->
-                            Log.i(TAG, "Wrote image post to collection with ID: ${documentReference.id}")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.e(TAG, "Error adding adding post", e)
-                        }
-                    }
-            } else {
-                Log.e(TAG, "Failed to upload image file with exception: ${task.exception}")
-            }
+    suspend fun createPost(imageFile: Uri, text: String = "") = coroutineScope {
+        try {
+            val storageRef = Firebase.storage.reference
+            val imageRef = storageRef.child("images/${fileNameForImageUpload()}.jpg")
+            imageRef.putFile(imageFile).await()
+
+            val downloadUri = imageRef.downloadUrl.await()
+            val data = hashMapOf(
+                "user" to Firebase.auth.currentUser!!.uid,
+                "time_posted" to Timestamp.now(),
+                "image_url" to downloadUri.toString(),
+                // If there is no text in the post, we
+                // still write a blank string to the DB
+                "text" to text,
+            )
+            val documentReference = db.collection("posts")
+                .add(data)
+                .await()
+            Log.i(TAG, "Wrote image post to collection with ID: ${documentReference.id}")
+        } catch(e: Exception) {
+            Log.e(TAG, "Failed uploading image file with exception: ${e}")
         }
     }
 

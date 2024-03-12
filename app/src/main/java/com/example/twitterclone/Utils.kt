@@ -7,6 +7,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+fun fileNameForImageUpload(): String {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    return "IMG_" + timeStamp + "_"
+}
+
 fun Context.createImageFile(): File {
     // Create an image file name
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())

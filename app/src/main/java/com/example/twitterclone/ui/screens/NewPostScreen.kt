@@ -52,6 +52,7 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val newPostText by newPostViewModel.newPostText
         val currentPhotoUri by newPostViewModel.currentPhotoUri
         val isCurrentPhoto = currentPhotoUri.toString().isNotEmpty()
 
@@ -64,9 +65,13 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
             )
         }
 
+        val isValidPost = newPostViewModel.isValidPost
+        val valid = (isCurrentPhoto && isValidPost)
+                // don't display error when text box is empty
+                || (newPostText.isEmpty() || isValidPost)
         TextField(
-            value = newPostViewModel.newPostText.value,
-            isError = !newPostViewModel.isValidPost,
+            value = newPostText,
+            isError = !valid,
             onValueChange = newPostViewModel::onUpdatePostText,
             placeholder = {
                 Text(text = if (isCurrentPhoto) "Share a thought (optional)..." else "Share a thought...")

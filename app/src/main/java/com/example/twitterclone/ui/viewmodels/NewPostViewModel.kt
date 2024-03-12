@@ -6,9 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.Screen
 import com.example.twitterclone.TwitterCloneNavigator
 import com.example.twitterclone.data.PostRepository
+import kotlinx.coroutines.launch
 import java.io.File
 
 // TODO: Move to constants file
@@ -56,7 +58,9 @@ class NewPostViewModel(
         val isPhoto = _currentPhotoUri.value.toString().isNotEmpty()
         if (isValidPost) {
             if (isPhoto && _currentPhotoUri.value.path != null) {
-                repository.createPost(_currentPhotoUri.value, postText)
+                viewModelScope.launch {
+                    repository.createPost(_currentPhotoUri.value, postText)
+                }
             } else {
                 repository.createPost(postText)
             }
