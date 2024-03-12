@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil.compose.AsyncImage
 import com.example.twitterclone.data.Post
 import com.example.twitterclone.data.PostRepository
 import com.google.firebase.Timestamp
@@ -34,11 +36,11 @@ fun formatTime(time: Timestamp): String {
 }
 
 @Composable
-fun TextPost(post: Post.TextPost) {
+fun PostContainer(post: Post, content: @Composable () -> Unit) {
     Column(Modifier.padding(8.dp)) {
         Text(text = post.user.username, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(4.dp))
-        Text(post.text, modifier = Modifier.padding(start = 2.dp))
+        content()
         Spacer(Modifier.height(4.dp))
         Text(formatTime(post.timePosted))
         Divider(
@@ -46,6 +48,27 @@ fun TextPost(post: Post.TextPost) {
             color = MaterialTheme.colors.primaryVariant,
             thickness = 1.dp
         )
+    }
+}
+
+@Composable
+fun TextPost(post: Post.TextPost) {
+    PostContainer(post) {
+        Text(post.text, modifier = Modifier.padding(start = 2.dp))
+    }
+}
+
+@Composable
+fun ImagePost(post: Post.ImagePost) {
+    PostContainer(post) {
+        AsyncImage(
+            modifier = Modifier.size(size = 240.dp),
+            model = post.imageUrl,
+            contentDescription = null
+        )
+        if (post.text != null) {
+            Text(post.text, modifier = Modifier.padding(start = 2.dp))
+        }
     }
 }
 
@@ -58,7 +81,7 @@ fun Posts(posts: List<Post>) {
         items(posts) { post ->
             when (post) {
                 is Post.TextPost -> TextPost(post)
-                is Post.ImagePost -> TODO()
+                is Post.ImagePost -> ImagePost(post)
             }
         }
     }

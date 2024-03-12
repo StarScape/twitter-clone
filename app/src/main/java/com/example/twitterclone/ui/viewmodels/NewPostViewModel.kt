@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import com.example.twitterclone.Screen
 import com.example.twitterclone.TwitterCloneNavigator
 import com.example.twitterclone.data.PostRepository
+import java.io.File
 
 // TODO: Move to constants file
 const val TWEET_CHAR_LIMIT = 150
@@ -52,9 +53,16 @@ class NewPostViewModel(
 
     fun tryPost() {
         val postText = _newPostText.value
-        if (postText.isNotBlank() && !isValidPost) {
-            repository.createPost(postText)
+        val isPhoto = _currentPhotoUri.value.toString().isNotEmpty()
+        if (isValidPost) {
+            if (isPhoto && _currentPhotoUri.value.path != null) {
+                repository.createPost(_currentPhotoUri.value, postText)
+            } else {
+                repository.createPost(postText)
+            }
+
             _newPostText.value = ""
+            _currentPhotoUri.value = Uri.EMPTY
             navigator.navController.navigate(Screen.Timeline.route)
         }
     }

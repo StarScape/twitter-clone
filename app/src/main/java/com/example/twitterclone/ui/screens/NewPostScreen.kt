@@ -52,20 +52,21 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val isCurrentPhoto = newPostViewModel.currentPhotoUri.value.toString().isNotEmpty()
+        val currentPhotoUri by newPostViewModel.currentPhotoUri
+        val isCurrentPhoto = currentPhotoUri.toString().isNotEmpty()
 
         AnimatedVisibility(visible = isCurrentPhoto) {
             // from coil library
             AsyncImage(
                 modifier = Modifier.size(size = 240.dp),
-                model = newPostViewModel.currentPhotoUri.value,
+                model = currentPhotoUri,
                 contentDescription = null
             )
         }
 
         TextField(
             value = newPostViewModel.newPostText.value,
-            isError = newPostViewModel.isValidPost,
+            isError = !newPostViewModel.isValidPost,
             onValueChange = newPostViewModel::onUpdatePostText,
             placeholder = {
                 Text(text = if (isCurrentPhoto) "Share a thought (optional)..." else "Share a thought...")

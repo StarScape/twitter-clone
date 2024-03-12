@@ -15,7 +15,7 @@ sealed class Post(val user: User, val timePosted: Timestamp) {
     class ImagePost(
         user: User,
         timePosted: Timestamp,
-        val image: Image,
+        val imageUrl: String,
         val text: String?,
     ): Post(user, timePosted)
 }

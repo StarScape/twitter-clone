@@ -1,24 +1,25 @@
 package com.example.twitterclone.data
 
+import android.net.Uri
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.io.File
 
 class PostRepository(private val db: FirebaseFirestore) {
     companion object { const val TAG: String = "PostRepository" }
 
+    /**
+     * Creates a new text-only post.
+     */
     fun createPost(text: String) {
         val data = hashMapOf(
             "user" to Firebase.auth.currentUser!!.uid,
@@ -33,6 +34,42 @@ class PostRepository(private val db: FirebaseFirestore) {
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error adding adding post", e)
             }
+    }
+
+    /**
+     * Creates a new image post. The [text] parameter is optional.
+     */
+    fun createPost(imageFile: Uri, text: String = "") {
+        val storageRef = Firebase.storage.reference
+        val imageRef = storageRef.child("images/test.jpg")
+        val uploadTask = imageRef.putFile(imageFile)
+        uploadTask.addOnCompleteListener { task ->
+            task.result
+            if (task.isSuccessful) {
+                Log.i(TAG, "Uploaded photo successfully.")
+                val downloadUrl = imageRef.downloadUrl.addOnCompleteListener {
+                    val downloadUrl = it.result.toString()
+                    val data = hashMapOf(
+                        "user" to Firebase.auth.currentUser!!.uid,
+                        "time_posted" to Timestamp.now(),
+                        "image_url" to downloadUrl,
+                        // If there is no text in the post, we
+                        // still write a blank string to the DB
+                        "text" to text,
+                    )
+                    db.collection("posts")
+                        .add(data)
+                        .addOnSuccessListener { documentReference ->
+                            Log.i(TAG, "Wrote image post to collection with ID: ${documentReference.id}")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Error adding adding post", e)
+                        }
+                    }
+            } else {
+                Log.e(TAG, "Failed to upload image file with exception: ${task.exception}")
+            }
+        }
     }
 
     /**
@@ -57,11 +94,20 @@ class PostRepository(private val db: FirebaseFirestore) {
                         .document(document["user"] as String)
                         .get()
                         .await()
-                    Post.TextPost(
-                        user = User(username = userSnapshot["username"] as String),
-                        timePosted = document["time_posted"] as Timestamp,
-                        text = document["text"] as String
-                    )
+                    if (document["image_url"] != null) {
+                        Post.ImagePost(
+                            user = User(username = userSnapshot["username"] as String),
+                            timePosted = document["time_posted"] as Timestamp,
+                            imageUrl = document["image_url"] as String,
+                            text = document["text"] as String?,
+                        )
+                    } else {
+                        Post.TextPost(
+                            user = User(username = userSnapshot["username"] as String),
+                            timePosted = document["time_posted"] as Timestamp,
+                            text = document["text"] as String
+                        )
+                    }
                 }
             }.awaitAll()
     }

@@ -15,6 +15,7 @@ firebaseAuth = "22.3.1"
 firebaseFirestore = "24.10.3"
 koinBom = "3.5.3"
 coil = "2.6.0"
+firebaseStorage = "20.3.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -44,6 +45,7 @@ koin-android = { module = "io.insert-koin:koin-android" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 coil = { "module" = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { "module" = "io.coil-kt:coil-compose", version.ref = "coil" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
