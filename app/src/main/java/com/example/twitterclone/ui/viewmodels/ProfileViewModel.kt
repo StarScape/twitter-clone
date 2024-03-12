@@ -1,7 +1,10 @@
 package com.example.twitterclone.ui.viewmodels
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.Screen
@@ -21,15 +24,26 @@ class ProfileViewModel(
     private val auth: FirebaseAuth,
     private val navigator: TwitterCloneNavigator,
 ) : ViewModel() {
-    val userPosts: MutableState<List<Post>> = mutableStateOf(emptyList())
+    val paginator = postRepository.getPaginator()
+    val userPosts: MutableState<List<Post>> = mutableStateOf(mutableListOf())
     val user: MutableState<User?> = mutableStateOf(null)
+    var isLoadingPosts by mutableStateOf(true)
 
     init {
         viewModelScope.launch {
-            userPosts.value = postRepository.getPosts(Firebase.auth.currentUser?.uid)
+            userPosts.value = paginator.getNextN()
+            isLoadingPosts = false
 
             val userUid = auth.currentUser!!.uid // won't be null since this screen requires auth
             user.value = userRepository.getUser(userUid)
+        }
+    }
+
+    fun onReachedBottomPost() {
+        isLoadingPosts = !paginator.endReached
+        viewModelScope.launch {
+            userPosts.value += paginator.getNextN()
+            isLoadingPosts = false
         }
     }
 

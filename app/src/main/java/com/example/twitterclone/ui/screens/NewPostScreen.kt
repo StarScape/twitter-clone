@@ -19,9 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -84,9 +84,9 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
             ),
             minLines = 3,
             maxLines = 7,
-            textStyle = MaterialTheme.typography.body1,
+            textStyle = MaterialTheme.typography.bodySmall,
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.surface
+                backgroundColor = MaterialTheme.colorScheme.surface
             ),
         )
         AddPhotoButton(

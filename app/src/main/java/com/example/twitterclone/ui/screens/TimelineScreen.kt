@@ -1,14 +1,13 @@
 package com.example.twitterclone.ui.screens
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.example.twitterclone.ui.Posts
-import com.example.twitterclone.ui.TimelineViewModel
+import com.example.twitterclone.ui.viewmodels.TimelineViewModel
 import org.koin.compose.koinInject
 
 @Composable
 fun TimelineScreen(timelineViewModel: TimelineViewModel = koinInject()) {
     val posts by timelineViewModel.posts
-    Posts(posts)
+    Posts(posts, timelineViewModel.isLoadingPosts, timelineViewModel::onReachedBottomPost)
 }

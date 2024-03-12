@@ -5,7 +5,7 @@ import com.example.twitterclone.data.PostRepository
 import com.example.twitterclone.data.UserRepository
 import com.example.twitterclone.ui.viewmodels.NewPostViewModel
 import com.example.twitterclone.ui.viewmodels.ProfileViewModel
-import com.example.twitterclone.ui.TimelineViewModel
+import com.example.twitterclone.ui.viewmodels.TimelineViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase

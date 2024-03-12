@@ -8,24 +8,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import coil.compose.AsyncImage
 import com.example.twitterclone.data.Post
-import com.example.twitterclone.data.PostRepository
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -45,7 +46,7 @@ fun PostContainer(post: Post, content: @Composable () -> Unit) {
         Text(formatTime(post.timePosted))
         Divider(
             modifier = Modifier.padding(vertical = 8.dp),
-            color = MaterialTheme.colors.primaryVariant,
+            color = MaterialTheme.colorScheme.primary,
             thickness = 1.dp
         )
     }
@@ -76,23 +77,39 @@ fun ImagePost(post: Post.ImagePost) {
  * A Composable for displaying a list of posts.
  */
 @Composable
-fun Posts(posts: List<Post>) {
-    LazyColumn {
-        items(posts) { post ->
+fun Posts(posts: List<Post>, loading: Boolean, onReachedBottomPost: () -> Unit) {
+    val listState = rememberLazyListState()
+    val reachedBottom: Boolean by remember {
+        derivedStateOf {
+            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+            lastVisibleItem?.index != 0 && lastVisibleItem?.index == listState.layoutInfo.totalItemsCount - 1
+        }
+    }
+
+    // Call the onReachedBottomPost callback whenever the user is
+    // scrolled all the way to the bottom in order to load more posts.
+    LaunchedEffect(reachedBottom) {
+        if (reachedBottom) {
+            onReachedBottomPost()
+        }
+    }
+
+    LazyColumn(state = listState) {
+        items(items = posts, key = { post -> post.uid }) { post ->
             when (post) {
                 is Post.TextPost -> TextPost(post)
                 is Post.ImagePost -> ImagePost(post)
             }
         }
-    }
-}
-
-class TimelineViewModel(private val repository: PostRepository) : ViewModel() {
-    val posts: MutableState<List<Post>> = mutableStateOf(emptyList())
-
-    init {
-        viewModelScope.launch {
-            posts.value = repository.getPosts()
+        if (loading) {
+            item {
+                Text("Loading...")
+//                CircularProgressIndicator(
+//                    modifier = Modifier.width(64.dp),
+//                )
+            }
         }
     }
+
+
 }
