@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.TopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -63,6 +64,7 @@ class TwitterCloneActivity : ComponentActivity() {
 
 @Composable
 fun Main(navController: NavHostController, authManager: AuthManager, modifier: Modifier = Modifier) {
+
     Scaffold(
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -96,7 +98,7 @@ fun Main(navController: NavHostController, authManager: AuthManager, modifier: M
                     }
                 }
             }
-        }
+        },
     ) { innerPadding ->
         val initialRoute = if (authManager.auth.currentUser != null) {
             Screen.Timeline.route

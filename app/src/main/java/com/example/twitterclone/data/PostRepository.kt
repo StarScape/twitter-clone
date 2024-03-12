@@ -8,13 +8,14 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
 
-class PostRepository(private val db: FirebaseFirestore) {
+class PostRepository(private val db: FirebaseFirestore, private val storage: FirebaseStorage) {
     companion object { const val TAG: String = "PostRepository" }
 
     /**
@@ -41,8 +42,7 @@ class PostRepository(private val db: FirebaseFirestore) {
      */
     suspend fun createPost(imageFile: Uri, text: String = "") = coroutineScope {
         try {
-            val storageRef = Firebase.storage.reference
-            val imageRef = storageRef.child("images/${fileNameForImageUpload()}.jpg")
+            val imageRef = storage.reference.child("images/${fileNameForImageUpload()}.jpg")
             imageRef.putFile(imageFile).await()
 
             val downloadUri = imageRef.downloadUrl.await()
