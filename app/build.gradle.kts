@@ -38,6 +38,7 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     composeOptions {
@@ -63,6 +64,9 @@ dependencies {
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.coil)
+    implementation(libs.coil.compose)
+    implementation(libs.accompanist.permissions)
 
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
