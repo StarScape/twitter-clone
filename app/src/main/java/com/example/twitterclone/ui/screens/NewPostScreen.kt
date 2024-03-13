@@ -4,15 +4,25 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -24,9 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.example.twitterclone.BuildConfig
@@ -40,7 +53,7 @@ import java.util.Objects
 @Composable
 fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val newPostText by newPostViewModel.newPostText
@@ -48,13 +61,16 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
         val isCurrentPhoto = currentPhotoUri.toString().isNotEmpty()
 
         AnimatedVisibility(visible = isCurrentPhoto) {
-            // from coil library
-            AsyncImage(
-                modifier = Modifier.size(size = 240.dp),
-                model = currentPhotoUri,
-                contentDescription = null
-            )
+            Column {
+                AsyncImage(
+                    modifier = Modifier.size(size = 240.dp).padding(end = 32.dp),
+                    model = currentPhotoUri,
+                    contentDescription = null
+                )
+                Spacer(Modifier.height(30.dp))
+            }
         }
+
 
         val isValidPost = newPostViewModel.isValidPost
         val valid = (isCurrentPhoto && isValidPost)
@@ -77,6 +93,7 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
             maxLines = 7,
             textStyle = MaterialTheme.typography.bodySmall,
             colors = TextFieldDefaults.colors(),
+            modifier = Modifier.fillMaxWidth(),
         )
         AddPhotoButton(
             onAddPhoto = { imageFileUri ->
@@ -133,36 +150,63 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
         }
     }
 
-    Row {
+    if (!showOptions) {
         Button(
-            onClick = { showOptions = !showOptions },
+            onClick = { showOptions = true },
             modifier = Modifier.padding(16.dp),
             colors = ButtonDefaults.buttonColors()
         ) {
             Text(if (showOptions) "X" else "+ Photo")
         }
+    }
 
-        if (showOptions) {
-            Row {
-                Button(
-                    onClick = {
-                        pickPhotoLauncher.launch("image/*")
-                        showOptions = false
-                    },
-                    modifier = Modifier.padding(16.dp),
-                    colors = ButtonDefaults.buttonColors()
-                ) {
-                    Text("Select")
-                }
+    if (showOptions) {
+        Row {
+            Button(
+                onClick = {
+                    showOptions = false
+                },
+                modifier = Modifier.padding(8.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+            ) {
+                Icon(Icons.Filled.Clear, "Clear")
+            }
 
-                Button(
-                    onClick = cameraPermissionState::launchPermissionRequest,
-                    modifier = Modifier.padding(16.dp),
-                    colors = ButtonDefaults.buttonColors()
-                ) {
-                    Text("Take")
-                }
+            val modifier = Modifier.padding(8.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+            Button(
+                onClick = {
+                    pickPhotoLauncher.launch("image/*")
+                },
+                modifier = modifier,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Select Photo",
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(text = "Select", fontSize = 12.sp)
+            }
+
+            Button(
+                onClick = cameraPermissionState::launchPermissionRequest,
+                modifier = modifier,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Select Photo"
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(text = "Take", fontSize = 12.sp)
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun AddButtonPreview() {
+    AddPhotoButton(onAddPhoto = {})
 }
