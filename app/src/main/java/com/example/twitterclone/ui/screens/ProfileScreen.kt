@@ -39,7 +39,7 @@ fun ProfileScreen(profileViewModel: ProfileViewModel = koinInject()) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserOverview(user: User?, onLogout: () -> Unit) {
-    val username = user?.username ?: "Loading..."
+    val username = user?.username?.let { name -> "${name}'s posts"} ?: "Loading..."
     var showMenu by remember { mutableStateOf(false) }
 
     TopAppBar(

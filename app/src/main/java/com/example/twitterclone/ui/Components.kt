@@ -76,7 +76,8 @@ fun TextPost(post: Post.TextPost) {
 fun ImagePost(post: Post.ImagePost) {
     PostContainer(post) {
         AsyncImage(
-            modifier = Modifier.size(size = 240.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 30.dp, vertical = 10.dp),
             model = post.imageUrl,
             contentDescription = null
         )
@@ -142,8 +143,7 @@ fun Posts(
             if (isLoadingNext) {
                 item {
                     CircularProgressIndicator(
-                        Modifier.size(64.dp)
-                            .padding(top = 50.dp)
+                        Modifier.size(64.dp).padding(bottom = 50.dp)
                     )
                 }
             }

@@ -16,7 +16,7 @@ sealed class Screen(
 
     // Screens that appear as a bottom on the app's bottom nav
     abstract class BottomNavScreen(route: String, val icon: ImageVector, val resourceId: Int): Screen(route)
-    data object Timeline : BottomNavScreen("timeline", Icons.Filled.List, R.string.timeline)
+    data object Timeline : BottomNavScreen("timeline", Icons.Filled.House, R.string.timeline)
     data object NewPost: BottomNavScreen("newpost", Icons.Filled.Add, R.string.newpost)
     data object Profile: BottomNavScreen("profile", Icons.Filled.AccountCircle, R.string.profile)
     companion object {

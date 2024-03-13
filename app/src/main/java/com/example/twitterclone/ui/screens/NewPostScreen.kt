@@ -18,6 +18,8 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
@@ -183,7 +185,7 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
                 modifier = modifier,
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Add,
+                    imageVector = Icons.Filled.AttachFile,
                     contentDescription = "Select Photo",
                 )
                 Spacer(Modifier.width(8.dp))
@@ -195,7 +197,7 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
                 modifier = modifier,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Favorite,
+                    imageVector = Icons.Default.CameraAlt,
                     contentDescription = "Select Photo"
                 )
                 Spacer(Modifier.width(8.dp))
