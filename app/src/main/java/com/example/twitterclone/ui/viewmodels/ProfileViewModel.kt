@@ -1,6 +1,5 @@
 package com.example.twitterclone.ui.viewmodels
 
-import android.annotation.SuppressLint
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,8 +13,6 @@ import com.example.twitterclone.data.PostRepository
 import com.example.twitterclone.data.User
 import com.example.twitterclone.data.UserRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
@@ -27,12 +24,12 @@ class ProfileViewModel(
     val paginator = postRepository.getPaginator()
     val userPosts: MutableState<List<Post>> = mutableStateOf(mutableListOf())
     val user: MutableState<User?> = mutableStateOf(null)
-    var isLoadingPosts by mutableStateOf(true)
+    var isLoadingNext by mutableStateOf(true)
 
     init {
         viewModelScope.launch {
             userPosts.value = paginator.getNextN()
-            isLoadingPosts = false
+            isLoadingNext = false
 
             val userUid = auth.currentUser!!.uid // won't be null since this screen requires auth
             user.value = userRepository.getUser(userUid)
@@ -40,11 +37,17 @@ class ProfileViewModel(
     }
 
     fun onReachedBottomPost() {
-        isLoadingPosts = !paginator.endReached
+        isLoadingNext = !paginator.endReached
         viewModelScope.launch {
             userPosts.value += paginator.getNextN()
-            isLoadingPosts = false
+            isLoadingNext = false
         }
+    }
+
+    suspend fun onRefresh() {
+        isLoadingNext = false
+        paginator.reset()
+        userPosts.value = paginator.getNextN()
     }
 
     fun onLogout() {

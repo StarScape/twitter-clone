@@ -9,5 +9,10 @@ import org.koin.compose.koinInject
 @Composable
 fun TimelineScreen(timelineViewModel: TimelineViewModel = koinInject()) {
     val posts by timelineViewModel.posts
-    Posts(posts, timelineViewModel.isLoadingPosts, timelineViewModel::onReachedBottomPost)
+    Posts(
+        posts = posts,
+        isLoadingNext = timelineViewModel.isLoadingNext,
+        onReachBottomPost = timelineViewModel::onReachedBottomPost,
+        onRefresh = timelineViewModel::onRefresh,
+    )
 }

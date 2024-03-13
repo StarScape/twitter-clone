@@ -157,6 +157,11 @@ class PostRepository(private val db: FirebaseFirestore, private val storage: Fir
             }
             return result.posts
         }
+
+        fun reset() {
+            endReached = false
+            lastFetched = null
+        }
     }
 
     /**

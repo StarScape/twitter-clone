@@ -3,8 +3,11 @@
  */
 package com.example.twitterclone.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -14,14 +17,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -44,7 +54,7 @@ fun PostContainer(post: Post, content: @Composable () -> Unit) {
         content()
         Spacer(Modifier.height(4.dp))
         Text(formatTime(post.timePosted))
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.padding(vertical = 8.dp),
             color = MaterialTheme.colorScheme.primary,
             thickness = 1.dp
@@ -76,8 +86,23 @@ fun ImagePost(post: Post.ImagePost) {
 /**
  * A Composable for displaying a list of posts.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Posts(posts: List<Post>, loading: Boolean, onReachedBottomPost: () -> Unit) {
+fun Posts(
+    posts: List<Post>,
+    isLoadingNext: Boolean,
+    onReachBottomPost: () -> Unit,
+    onRefresh: suspend () -> Unit
+) {
+    val pullRefreshState = rememberPullToRefreshState()
+
+    if (pullRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            onRefresh()
+            pullRefreshState.endRefresh()
+        }
+    }
+
     val listState = rememberLazyListState()
     val reachedBottom: Boolean by remember {
         derivedStateOf {
@@ -90,26 +115,39 @@ fun Posts(posts: List<Post>, loading: Boolean, onReachedBottomPost: () -> Unit) 
     // scrolled all the way to the bottom in order to load more posts.
     LaunchedEffect(reachedBottom) {
         if (reachedBottom) {
-            onReachedBottomPost()
+            onReachBottomPost()
         }
     }
 
-    LazyColumn(state = listState) {
-        items(items = posts, key = { post -> post.uid }) { post ->
-            when (post) {
-                is Post.TextPost -> TextPost(post)
-                is Post.ImagePost -> ImagePost(post)
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .nestedScroll(pullRefreshState.nestedScrollConnection)
+    ) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            if (!pullRefreshState.isRefreshing) {
+                items(items = posts, key = { post -> post.uid }) { post ->
+                    when (post) {
+                        is Post.TextPost -> TextPost(post)
+                        is Post.ImagePost -> ImagePost(post)
+                    }
+                }
+            }
+            if (isLoadingNext) {
+                item {
+                    CircularProgressIndicator(
+                        Modifier.size(64.dp)
+                            .padding(top = 50.dp)
+                    )
+                }
             }
         }
-        if (loading) {
-            item {
-                Text("Loading...")
-//                CircularProgressIndicator(
-//                    modifier = Modifier.width(64.dp),
-//                )
-            }
-        }
+        PullToRefreshContainer(
+            state = pullRefreshState,
+            modifier = Modifier.align(Alignment.TopCenter),
+        )
     }
-
-
 }

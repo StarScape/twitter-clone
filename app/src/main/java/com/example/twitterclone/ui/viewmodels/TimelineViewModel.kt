@@ -13,20 +13,26 @@ import kotlinx.coroutines.launch
 class TimelineViewModel(private val repository: PostRepository) : ViewModel() {
     val paginator = repository.getPaginator()
     val posts: MutableState<List<Post>> = mutableStateOf(emptyList())
-    var isLoadingPosts by mutableStateOf(true)
+    var isLoadingNext by mutableStateOf(true)
 
     init {
         viewModelScope.launch {
             posts.value = paginator.getNextN()
-            isLoadingPosts = false
+            isLoadingNext = false
         }
     }
 
     fun onReachedBottomPost() {
-        isLoadingPosts = !paginator.endReached
+        isLoadingNext = !paginator.endReached
         viewModelScope.launch {
             posts.value += paginator.getNextN()
-            isLoadingPosts = false
+            isLoadingNext = false
         }
+    }
+
+    suspend fun onRefresh() {
+        isLoadingNext = false
+        paginator.reset()
+        posts.value = paginator.getNextN()
     }
 }
