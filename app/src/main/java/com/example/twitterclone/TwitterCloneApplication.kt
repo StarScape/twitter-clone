@@ -20,7 +20,7 @@ val appModule = module {
     single { Firebase.firestore }
     single { Firebase.storage }
     single { TwitterCloneNavigator() }
-    single { PostRepository(db = get(), storage = get()) }
+    single { PostRepository(db = get(), storage = get(), auth = get()) }
     single { UserRepository(db = get()) }
 
     // ViewModel instance created by Koin

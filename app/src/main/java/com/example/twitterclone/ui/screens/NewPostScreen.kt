@@ -1,9 +1,6 @@
 package com.example.twitterclone.ui.screens
 
-import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -16,7 +13,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -106,7 +102,7 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
 
     val context = LocalContext.current
     val file = context.createImageFile()
-    val uri = FileProvider.getUriForFile(
+    val photoUri = FileProvider.getUriForFile(
         Objects.requireNonNull(context),
         BuildConfig.APPLICATION_ID + ".provider", file
     )
@@ -115,7 +111,7 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             if (success) {
-                onAddPhoto(uri)
+                onAddPhoto(photoUri)
             }
         }
     )
@@ -124,7 +120,7 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
         permission = android.Manifest.permission.CAMERA,
         onPermissionResult = { granted ->
             if (granted) {
-                cameraLauncher.launch(uri)
+                cameraLauncher.launch(photoUri)
             } else print("camera permission is denied")
         }
     )

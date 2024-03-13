@@ -4,16 +4,14 @@ import android.net.Uri
 import android.util.Log
 import com.example.twitterclone.fileNameForImageUpload
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -21,7 +19,11 @@ import kotlinx.coroutines.tasks.await
  */
 const val DEFAULT_POSTS_PER_PAGE: Long = 5
 
-class PostRepository(private val db: FirebaseFirestore, private val storage: FirebaseStorage) {
+class PostRepository(
+    private val db: FirebaseFirestore,
+    private val storage: FirebaseStorage,
+    private val auth: FirebaseAuth,
+) {
     companion object { const val TAG: String = "PostRepository" }
 
     /**
@@ -38,20 +40,21 @@ class PostRepository(private val db: FirebaseFirestore, private val storage: Fir
     /**
      * Creates a new text-only post.
      */
-    fun createPost(text: String) {
-        val data = hashMapOf(
-            "user" to Firebase.auth.currentUser!!.uid,
-            "time_posted" to Timestamp.now(),
-            "text" to text,
-        )
-        db.collection("posts")
-            .add(data)
-            .addOnSuccessListener { documentReference ->
-                Log.d(TAG, "Wrote post to collection with ID: ${documentReference.id}")
-            }
-            .addOnFailureListener { e ->
-                Log.w(TAG, "Error adding adding post", e)
-            }
+    suspend fun createPost(text: String) {
+        try {
+            val data = hashMapOf(
+                "user" to auth.currentUser!!.uid,
+                "time_posted" to Timestamp.now(),
+                "text" to text,
+            )
+            val documentReference = db.collection("posts")
+                .add(data)
+                .await()
+
+            Log.d(TAG, "Wrote post to collection with ID: ${documentReference.id}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding adding post", e)
+        }
     }
 
     /**
@@ -64,7 +67,7 @@ class PostRepository(private val db: FirebaseFirestore, private val storage: Fir
 
             val downloadUri = imageRef.downloadUrl.await()
             val data = hashMapOf(
-                "user" to Firebase.auth.currentUser!!.uid,
+                "user" to auth.currentUser!!.uid,
                 "time_posted" to Timestamp.now(),
                 "image_url" to downloadUri.toString(),
                 // If there is no text in the post, we

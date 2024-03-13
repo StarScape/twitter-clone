@@ -57,14 +57,13 @@ class NewPostViewModel(
         val postText = _newPostText.value
         val isPhoto = _currentPhotoUri.value.toString().isNotEmpty()
         if (isValidPost) {
-            if (isPhoto && _currentPhotoUri.value.path != null) {
-                viewModelScope.launch {
+            viewModelScope.launch {
+                if (isPhoto && _currentPhotoUri.value.path != null) {
                     repository.createPost(_currentPhotoUri.value, postText)
+                } else {
+                    repository.createPost(postText)
                 }
-            } else {
-                repository.createPost(postText)
             }
-
             _newPostText.value = ""
             _currentPhotoUri.value = Uri.EMPTY
             navigator.navController.navigate(Screen.Timeline.route)

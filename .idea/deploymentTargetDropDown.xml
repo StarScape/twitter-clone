@@ -5,6 +5,18 @@
       <entry key="app">
         <State />
       </entry>
+      <entry key="create_text_post()">
+        <State />
+      </entry>
+      <entry key="get_posts_tests()">
+        <State />
+      </entry>
+      <entry key="paginator_test()">
+        <State />
+      </entry>
+      <entry key="test_createPost_with_image()">
+        <State />
+      </entry>
     </value>
   </component>
 </project>
