@@ -21,18 +21,31 @@ class ProfileViewModel(
     private val auth: FirebaseAuth,
     private val navigator: TwitterCloneNavigator,
 ) : ViewModel() {
-    val paginator = postRepository.getPaginator()
-    val userPosts: MutableState<List<Post>> = mutableStateOf(mutableListOf())
+    lateinit var paginator: PostRepository.PostPaginator
+    val userPosts: MutableState<List<Post>> = mutableStateOf(listOf())
     val user: MutableState<User?> = mutableStateOf(null)
     var isLoadingNext by mutableStateOf(true)
 
     init {
-        viewModelScope.launch {
-            userPosts.value = paginator.getNextN()
-            isLoadingNext = false
+        initUserAndPosts()
+        auth.addAuthStateListener {
+            initUserAndPosts()
+        }
+    }
 
-            val userUid = auth.currentUser!!.uid // won't be null since this screen requires auth
-            user.value = userRepository.getUser(userUid)
+    private fun initUserAndPosts() {
+        viewModelScope.launch {
+            if (auth.currentUser != null) {
+                val userUid = auth.currentUser!!.uid
+                user.value = userRepository.getUser(userUid)
+
+                paginator = postRepository.getPaginator(userUid = userUid)
+                userPosts.value = paginator.getNextN()
+                isLoadingNext = false
+            } else {
+                user.value = null
+                userPosts.value = listOf()
+            }
         }
     }
 

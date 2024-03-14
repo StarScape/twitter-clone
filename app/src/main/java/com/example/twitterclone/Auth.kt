@@ -29,7 +29,6 @@ class AuthManager(
                     val dbUser = mapOf(
                         "username" to username,
                     )
-                    // TODO: Added this manually in the backend for the moment, but TESTME
                     db.collection("users").document(uid)
                         .set(dbUser)
                         .addOnCompleteListener { updateTask ->

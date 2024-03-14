@@ -65,7 +65,8 @@ fun NewPostScreen(newPostViewModel: NewPostViewModel = koinInject()) {
         AnimatedVisibility(visible = isCurrentPhoto) {
             Column {
                 AsyncImage(
-                    modifier = Modifier.size(size = 240.dp).padding(end = 32.dp),
+                    modifier = Modifier.size(300.dp)
+                        .padding(horizontal = 30.dp, vertical = 10.dp),
                     model = currentPhotoUri,
                     contentDescription = null
                 )
@@ -181,6 +182,7 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
             Button(
                 onClick = {
                     pickPhotoLauncher.launch("image/*")
+                    showOptions = false
                 },
                 modifier = modifier,
             ) {
@@ -193,7 +195,10 @@ fun AddPhotoButton(onAddPhoto: (Uri) -> Unit) {
             }
 
             Button(
-                onClick = cameraPermissionState::launchPermissionRequest,
+                onClick = {
+                    cameraPermissionState.launchPermissionRequest()
+                    showOptions = false
+                },
                 modifier = modifier,
             ) {
                 Icon(

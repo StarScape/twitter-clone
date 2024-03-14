@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,15 @@ fun LoginScreen(navController: NavController, authManager: AuthManager) {
             // Optional: specify keyboard type as Password
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
+
+        if (error.isNotBlank()) {
+            Text(
+                error,
+                color = Color.Red,
+                modifier = Modifier.padding(horizontal = 30.dp, vertical = 10.dp)
+            )
+        }
+
         Row(modifier = Modifier.padding(top = 16.dp)) {
             // Login button
             Button(

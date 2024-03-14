@@ -8,13 +8,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.twitterclone.Screen
+import com.example.twitterclone.TWEET_CHAR_LIMIT
 import com.example.twitterclone.TwitterCloneNavigator
 import com.example.twitterclone.data.PostRepository
 import kotlinx.coroutines.launch
-import java.io.File
-
-// TODO: Move to constants file
-const val TWEET_CHAR_LIMIT = 150
 
 class NewPostViewModel(
     private val repository: PostRepository,
